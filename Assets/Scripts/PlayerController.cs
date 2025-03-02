@@ -37,29 +37,26 @@ public class PlayerController : MonoBehaviour
         mainCamera.transform.position = transform.position;
         moveAction = InputSystem.actions.FindAction("Attack", true);
         moveAction2 = InputSystem.actions.FindAction("Move", true);
-        if (Application.isEditor)
+        moveAction.performed += context =>
         {
-            moveAction.performed += context =>
+            Vector2 pos = new();
+            if (Touchscreen.current == null)
+                pos = Mouse.current.position.ReadValue();
+            else
+                pos = Touchscreen.current.primaryTouch.position.ReadValue();
+            Ray ray = mainCamera.ScreenPointToRay(pos);
+            RaycastHit hit;
+            if (Physics.Raycast(ray, out hit, Mathf.Infinity, floorMask))
             {
-                Vector2 pos = new();
-                if (Touchscreen.current == null)
-                    pos = Mouse.current.position.ReadValue();
-                else
-                    pos = Touchscreen.current.primaryTouch.position.ReadValue();
-                Ray ray = mainCamera.ScreenPointToRay(pos);
-                RaycastHit hit;
-                if (Physics.Raycast(ray, out hit, Mathf.Infinity, floorMask))
-                {
-                    targetPoint = hit.point;
-                    if (agent == null)
-                        movementDirection = (targetPoint - transform.position).normalized;
-                }
-                else
-                {
-                    targetPoint = Vector3.zero;
-                }
-            };
-        }
+                targetPoint = hit.point;
+                if (agent == null)
+                    movementDirection = (targetPoint - transform.position).normalized;
+            }
+            else
+            {
+                targetPoint = Vector3.zero;
+            }
+        };
     }
 
     // Update is called once per frame
